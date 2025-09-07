@@ -34,21 +34,6 @@ public class SkipListMapArrayDequeOrderBook implements OrderBook {
     }
 
     @Override
-    public void updateOrder(PrimitiveOrder updatedOrder) {
-        PrimitiveOrder existingOrder = ordersById.get(updatedOrder.orderId);
-        if (existingOrder == null) {
-            addOrder(updatedOrder);
-            return;
-        }
-
-        // Nếu giá thay đổi, cần remove và add lại
-        if (existingOrder.price != updatedOrder.price) {
-            removeOrder(existingOrder);
-            addOrder(updatedOrder);
-        }
-    }
-
-    @Override
     public void removeOrder(PrimitiveOrder order) {
         NavigableMap<Long, ArrayDeque<PrimitiveOrder>> targetBook =
                 (order.side == PrimitiveOrder.SIDE_BUY) ? bidLevels : askLevels;

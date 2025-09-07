@@ -36,21 +36,6 @@ public class SkipListMapLinkedListOrderBook implements OrderBook {
     }
 
     @Override
-    public void updateOrder(PrimitiveOrder updatedOrder) {
-        PrimitiveOrder existingOrder = ordersById.get(updatedOrder.orderId);
-        if (existingOrder == null) {
-            addOrder(updatedOrder);
-            return;
-        }
-
-        // Trường hợp giá thay đổi (rất hiếm trong order book chuẩn)
-        if (existingOrder.price != updatedOrder.price) {
-            removeOrder(existingOrder);
-            addOrder(updatedOrder);
-        }
-    }
-
-    @Override
     public void removeOrder(PrimitiveOrder order) {
         NavigableMap<Long, List<PrimitiveOrder>> targetBook =
                 (order.side == PrimitiveOrder.SIDE_BUY) ? bidLevels : askLevels;

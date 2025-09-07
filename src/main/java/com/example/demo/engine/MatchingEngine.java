@@ -1,8 +1,8 @@
 package com.example.demo.engine;
 
-import com.example.demo.core.*;
+import com.example.demo.core.OrderBook;
+import com.example.demo.core.PrimitiveOrder;
 
-import javax.naming.OperationNotSupportedException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,19 +37,21 @@ public class MatchingEngine {
     private void processBuyOrder(PrimitiveOrder aggressorOrder) {
         Iterator<Map.Entry<Long, ? extends Collection<PrimitiveOrder>>> askIter = orderBook.getAskLevelsIterator();
 
-        while (aggressorOrder.remainingQty > 0 && askIter.hasNext()) {
-            Map.Entry<Long, ? extends Collection<PrimitiveOrder>> askLevel = askIter.next();
-            long askPrice = askLevel.getKey();
-            Collection<PrimitiveOrder> restingAsks = askLevel.getValue();
+        if (askIter != null) {
+            while (aggressorOrder.remainingQty > 0 && askIter.hasNext()) {
+                Map.Entry<Long, ? extends Collection<PrimitiveOrder>> askLevel = askIter.next();
+                long askPrice = askLevel.getKey();
+                Collection<PrimitiveOrder> restingAsks = askLevel.getValue();
 
-            if (aggressorOrder.price >= askPrice) {
-                processLevel(aggressorOrder, restingAsks, PrimitiveOrder.SIDE_BUY);
+                if (aggressorOrder.price >= askPrice && restingAsks != null) {
+                    processLevel(aggressorOrder, restingAsks, PrimitiveOrder.SIDE_BUY);
 
-                if ( restingAsks.isEmpty()) {
-                    askIter.remove();
+                    if ( restingAsks.isEmpty()) {
+                        askIter.remove();
+                    }
+                } else {
+                    break;
                 }
-            } else {
-                break;
             }
         }
     }
@@ -57,19 +59,21 @@ public class MatchingEngine {
     private void processSellOrder(PrimitiveOrder aggressorOrder) {
         Iterator<Map.Entry<Long, ? extends Collection<PrimitiveOrder>>> bidIter = orderBook.getBidLevelsIterator();
 
-        while (aggressorOrder.remainingQty > 0 && bidIter.hasNext()) {
-            Map.Entry<Long, ? extends Collection<PrimitiveOrder>> bidLevel = bidIter.next();
-            long bidPrice = bidLevel.getKey();
-            Collection<PrimitiveOrder> restingBids = bidLevel.getValue();
+        if (bidIter != null) {
+            while (aggressorOrder.remainingQty > 0 && bidIter.hasNext()) {
+                Map.Entry<Long, ? extends Collection<PrimitiveOrder>> bidLevel = bidIter.next();
+                long bidPrice = bidLevel.getKey();
+                Collection<PrimitiveOrder> restingBids = bidLevel.getValue();
 
-            if (aggressorOrder.price <= bidPrice) {
-                processLevel(aggressorOrder, restingBids, PrimitiveOrder.SIDE_SELL);
+                if (aggressorOrder.price <= bidPrice && restingBids != null) {
+                    processLevel(aggressorOrder, restingBids, PrimitiveOrder.SIDE_SELL);
 
-                if (restingBids.isEmpty()) {
-                    bidIter.remove();
+                    if (restingBids.isEmpty()) {
+                        bidIter.remove();
+                    }
+                } else {
+                    break;
                 }
-            } else {
-                break;
             }
         }
     }

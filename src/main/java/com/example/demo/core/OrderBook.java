@@ -11,11 +11,6 @@ public interface OrderBook {
      */
     void addOrder(PrimitiveOrder order);
 
-    /**
-     * Updates an existing order in the order book.
-     * @param order The order to be updated.
-     */
-    void updateOrder(PrimitiveOrder order);
 
     /**
      * Removes an order from the order book.

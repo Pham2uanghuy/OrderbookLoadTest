@@ -4,8 +4,6 @@ import com.example.demo.core.OrderBook;
 import com.example.demo.core.PrimitiveOrder;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 public class ArrayDequeOrderBook implements OrderBook {
 
@@ -30,21 +28,6 @@ public class ArrayDequeOrderBook implements OrderBook {
                 (order.side == PrimitiveOrder.SIDE_BUY) ? bidLevels : askLevels;
         targetBook.computeIfAbsent(order.price, k -> new ArrayDeque<>()).addLast(order);
         ordersById.put(order.orderId, order);
-    }
-
-    @Override
-    public void updateOrder(PrimitiveOrder updatedOrder) {
-        PrimitiveOrder existingOrder = ordersById.get(updatedOrder.orderId);
-        if (existingOrder == null) {
-            addOrder(updatedOrder);
-            return;
-        }
-
-        // Nếu giá thay đổi, cần remove và add lại
-        if (existingOrder.price != updatedOrder.price) {
-            removeOrder(existingOrder);
-            addOrder(updatedOrder);
-        }
     }
 
     @Override
