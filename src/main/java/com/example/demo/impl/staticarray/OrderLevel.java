@@ -1,4 +1,6 @@
-package com.example.demo.core;
+package com.example.demo.impl.staticarray;
+
+import com.example.demo.core.PrimitiveOrder;
 
 import java.util.Collection;
 import java.util.Iterator;

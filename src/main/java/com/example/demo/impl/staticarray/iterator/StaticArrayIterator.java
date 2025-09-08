@@ -1,6 +1,6 @@
-package com.example.demo.impl.iterator;
+package com.example.demo.impl.staticarray.iterator;
 
-import com.example.demo.core.OrderLevel;
+import com.example.demo.impl.staticarray.OrderLevel;
 import com.example.demo.core.PrimitiveOrder;
 
 import java.util.AbstractMap;

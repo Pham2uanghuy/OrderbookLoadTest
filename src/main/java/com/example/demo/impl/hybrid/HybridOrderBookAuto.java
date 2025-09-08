@@ -2,9 +2,8 @@ package com.example.demo.impl.hybrid;
 
 import com.example.demo.core.OrderBook;
 import com.example.demo.core.PrimitiveOrder;
-import com.example.demo.impl.ArrayDequeOrderBook;
-import com.example.demo.impl.LongObjectArrayDequeOrderBook;
-import com.example.demo.impl.StaticArrayOrderBook;
+import com.example.demo.impl.arraydeque.LongObjectArrayDequeOrderBook;
+import com.example.demo.impl.staticarray.StaticArrayOrderBook;
 
 import java.util.Collection;
 import java.util.Iterator;

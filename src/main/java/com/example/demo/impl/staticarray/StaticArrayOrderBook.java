@@ -1,13 +1,11 @@
-package com.example.demo.impl;
+package com.example.demo.impl.staticarray;
 
 import com.example.demo.core.OrderBook;
-import com.example.demo.core.OrderLevel;
 import com.example.demo.core.PrimitiveOrder;
-import com.example.demo.impl.iterator.StaticArrayIterator;
+import com.example.demo.impl.staticarray.iterator.StaticArrayIterator;
 import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 

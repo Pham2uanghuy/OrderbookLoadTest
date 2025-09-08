@@ -1,6 +1,6 @@
 package com.example.demo.core;
 
-public final class PrimitiveOrder implements Resettable {
+public final class PrimitiveOrder{
     public long orderId;
     public int userId;
     public int instrumentId;
@@ -12,22 +12,20 @@ public final class PrimitiveOrder implements Resettable {
     public byte status;
     public long timestamp;
 
-    // Constants cho side
+    // Side Constants
     public static final byte SIDE_BUY = 0;
     public static final byte SIDE_SELL = 1;
 
-    // Constants cho status
+    // Status Constants
     public static final byte STATUS_OPEN = 0;
     public static final byte STATUS_PARTIALLY_FILLED = 1;
     public static final byte STATUS_FILLED = 2;
     public static final byte STATUS_CANCELED = 3;
 
-    // ===== Constructors =====
 
-    // Constructor mặc định (dùng cho pool)
     public PrimitiveOrder() {}
 
-    // Constructor đầy đủ
+
     public PrimitiveOrder(long orderId,
                           int userId,
                           int instrumentId,
@@ -50,7 +48,6 @@ public final class PrimitiveOrder implements Resettable {
         this.timestamp = timestamp;
     }
 
-    // Constructor rút gọn (mặc định remainingQty = originalQty, filledQty = 0, status = OPEN)
     public PrimitiveOrder(long orderId,
                           int userId,
                           int instrumentId,
@@ -76,7 +73,6 @@ public final class PrimitiveOrder implements Resettable {
         this.timestamp = other.timestamp;
     }
 
-    // ===== Methods =====
 
     public void fill(long fillAmount) {
         if (fillAmount <= 0) return;
@@ -90,19 +86,6 @@ public final class PrimitiveOrder implements Resettable {
         } else {
             this.status = STATUS_PARTIALLY_FILLED;
         }
-    }
-
-    public void reset() {
-        orderId = 0;
-        userId = 0;
-        instrumentId = 0;
-        price = 0;
-        originalQty = 0;
-        remainingQty = 0;
-        filledQty = 0;
-        side = 0;
-        status = STATUS_OPEN;
-        timestamp = 0;
     }
 
     @Override

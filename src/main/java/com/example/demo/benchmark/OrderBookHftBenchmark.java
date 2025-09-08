@@ -3,17 +3,12 @@ package com.example.demo.benchmark;
 import com.example.demo.core.OrderBook;
 import com.example.demo.core.PrimitiveOrder;
 import com.example.demo.engine.MatchingEngine;
-import com.example.demo.impl.ArrayDequeOrderBook;
-import com.example.demo.impl.StaticArrayOrderBook;
+import com.example.demo.impl.arraydeque.ArrayDequeOrderBook;
+import com.example.demo.impl.staticarray.StaticArrayOrderBook;
 
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.Arrays;
-
-
-import java.lang.management.ManagementFactory;
-import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class OrderBookHftBenchmark {
 
