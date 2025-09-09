@@ -1,57 +1,57 @@
-package com.example.demo.benchmark;
+package com.example.demo.benchmark.part_1;
 
 import com.example.demo.core.OrderBook;
 import com.example.demo.core.PrimitiveOrder;
 import com.example.demo.engine.MatchingEngine;
-import com.example.demo.impl.hybrid.HybridOrderBookAuto;
-import com.example.demo.impl.hybrid.HybridOrderBookManual;
+import com.example.demo.impl.arraydeque.ArrayDequeOrderBook;
+import com.example.demo.impl.arraydeque.LongObjectArrayDequeOrderBook;
+import com.example.demo.impl.linkedlist.LinkedListOrderBook;
+import com.example.demo.impl.linkedlist.LongObjectLinkedListOrderBook;
 
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class StaticArrayOrderBookBenchmark {
+public class DequeVsLinkedListBenchmarkV2 {
 
     private static final int WARMUP_ROUNDS = 3;
     private static final int MEASURE_ROUNDS = 5;
 
     public static void main(String[] args) {
-        int[] loadSizes = {100_000};
-
-        // Độ chính xác giao dịch BTC thực tế (ví dụ: bước giá 1$)
+        int[] loadSizes = {50_000};
         int btcPriceStep = 1;
 
         for (int loadSize : loadSizes) {
-            System.out.println("===== Benchmark with " + loadSize + " orders =====");
+            System.out.println("Benchmark with " + loadSize + " orders");
 
-            // Kịch bản A: Range nhỏ, orders tập trung quanh mid-price (ưu điểm của StaticArray)
-            System.out.println(">>> Scenario A: Small price range (~10k prices, step=1), orders clustered around mid-price");
-//            benchmarkOrderBook("ArrayDequeOrderBook", new ArrayDequeOrderBook(), loadSize, 20000, 30000, btcPriceStep, "clustered");
-//            benchmarkOrderBook("StaticArrayOrderBook_SMALL_CLUSTERED", new StaticArrayOrderBook(20000, 30000, btcPriceStep), loadSize, 20000, 30000, btcPriceStep, "clustered");
-            benchmarkOrderBook("HybridOrderBookAuto_SMALL_CLUSTERED", new HybridOrderBookAuto(20000, 30000, btcPriceStep, 50), loadSize, 20000, 30000, btcPriceStep, "clustered");
-            benchmarkOrderBook("HybridOrderBookManual_SMALL_CLUSTERED", new HybridOrderBookManual(20000, 30000, btcPriceStep, 50), loadSize, 20000, 30000, btcPriceStep, "clustered");
+            // Scenario A: small range, clustered
+            System.out.println(">>> Scenario A: Small price range (~10k prices), orders clustered around mid-price");
+            benchmarkOrderBook("ArrayDequeOrderBook_SMALL_CLUSTERED", new ArrayDequeOrderBook(), loadSize, 20000, 30000, btcPriceStep, "clustered");
+            benchmarkOrderBook("LinkedListOrderBook_SMALL_CLUSTERED", new LinkedListOrderBook(), loadSize, 20000, 30000, btcPriceStep, "clustered");
+            benchmarkOrderBook("LongObjectArrayDequeOrderBook_SMALL_CLUSTERED", new LongObjectArrayDequeOrderBook(), loadSize, 20000, 30000, btcPriceStep, "clustered");
+            benchmarkOrderBook("LongObjectLinkedListOrderBook_SMALL_CLUSTERED", new LongObjectLinkedListOrderBook(), loadSize, 20000, 30000, btcPriceStep, "clustered");
 
-            // Kịch bản B: Range nhỏ, orders dàn trải toàn range
-            System.out.println(">>> Scenario B: Small price range (~10k prices, step=1), orders spread out");
-          //  benchmarkOrderBook("ArrayDequeOrderBook", new ArrayDequeOrderBook(), loadSize, 20000, 30000, btcPriceStep, "spread");
-          //  benchmarkOrderBook("StaticArrayOrderBook_SMALL_SPREAD", new StaticArrayOrderBook(20000, 30000, btcPriceStep), loadSize, 20000, 30000, btcPriceStep, "spread");
-            benchmarkOrderBook("HybridOrderBookAuto_SMALL_SPREAD", new HybridOrderBookAuto(20000, 30000, btcPriceStep, 50), loadSize, 20000, 30000, btcPriceStep, "spread");
-            benchmarkOrderBook("HybridOrderBookManual_SMALL_SPREAD", new HybridOrderBookManual(20000, 30000, btcPriceStep, 50), loadSize, 20000, 30000, btcPriceStep, "spread");
+            // Scenario B: small range, spread
+            System.out.println(">>> Scenario B: Small price range (~10k prices), orders spread out");
+            benchmarkOrderBook("ArrayDequeOrderBook_SMALL_SPREAD", new ArrayDequeOrderBook(), loadSize, 20000, 30000, btcPriceStep, "spread");
+            benchmarkOrderBook("LinkedListOrderBook_SMALL_SPREAD", new LinkedListOrderBook(), loadSize, 20000, 30000, btcPriceStep, "spread");
+            benchmarkOrderBook("LongObjectArrayDequeOrderBook_SMALL_SPREAD", new LongObjectArrayDequeOrderBook(), loadSize, 20000, 30000, btcPriceStep, "spread");
+            benchmarkOrderBook("LongObjectLinkedListOrderBook_SMALL_SPREAD", new LongObjectLinkedListOrderBook(), loadSize, 20000, 30000, btcPriceStep, "spread");
 
-            // Kịch bản C: Range lớn, orders tập trung quanh mid-price (nhược điểm của StaticArray)
-            System.out.println(">>> Scenario C: Large price range (~1M prices, step=1), orders clustered around mid-price");
-          //  benchmarkOrderBook("ArrayDequeOrderBook", new ArrayDequeOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
-          //  benchmarkOrderBook("StaticArrayOrderBook_LARGE_CLUSTERED", new StaticArrayOrderBook(1000, 1_001_000, btcPriceStep), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
-            benchmarkOrderBook("HybridOrderBookAuto_LARGE_CLUSTERED", new HybridOrderBookAuto(1000, 1_001_000, btcPriceStep, 50), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
-            benchmarkOrderBook("HybridOrderBookManual_LARGE_CLUSTERED", new HybridOrderBookManual(1000, 1_001_000, btcPriceStep, 50), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
+            // Scenario C: large range, clustered
+            benchmarkOrderBook("ArrayDequeOrderBook_LARGE_CLUSTERED", new ArrayDequeOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
+            benchmarkOrderBook("LinkedListOrderBook_LARGE_CLUSTERED", new LinkedListOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
+            System.out.println(">>> Scenario C: Large price range (~1M prices), orders clustered around mid-price");
+            benchmarkOrderBook("LongObjectArrayDequeOrderBook_LARGE_CLUSTERED", new LongObjectArrayDequeOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
+            benchmarkOrderBook("LongObjectLinkedListOrderBook_LARGE_CLUSTERED", new LongObjectLinkedListOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
 
-            // Kịch bản D: Range lớn, orders dàn trải toàn range
-            System.out.println(">>> Scenario D: Large price range (~1M prices, step=1), orders spread out");
-          //  benchmarkOrderBook("ArrayDequeOrderBook", new ArrayDequeOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
-          //  benchmarkOrderBook("StaticArrayOrderBook_LARGE_SPREAD", new StaticArrayOrderBook(1000, 1_001_000, btcPriceStep), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
-            benchmarkOrderBook("HybridOrderBookAuto_LARGE_SPREAD", new HybridOrderBookAuto(1000, 1_001_000, btcPriceStep, 50), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
-            benchmarkOrderBook("HybridOrderBookManual_LARGE_SPREAD", new HybridOrderBookManual(1000, 1_001_000, btcPriceStep, 50), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
+            // Scenario D: large range, spread
+            System.out.println(">>> Scenario D: Large price range (~1M prices), orders spread out");
+            benchmarkOrderBook("ArrayDequeOrderBook_LARGE_SPREAD", new ArrayDequeOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
+            benchmarkOrderBook("LinkedListOrderBook_LARGE_SPREAD", new LinkedListOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
+            benchmarkOrderBook("LongObjectArrayDequeOrderBook_LARGE_SPREAD", new LongObjectArrayDequeOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
+            benchmarkOrderBook("LongObjectLinkedListOrderBook_LARGE_SPREAD", new LongObjectLinkedListOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
         }
     }
 
@@ -60,17 +60,9 @@ public class StaticArrayOrderBookBenchmark {
         MatchingEngine engine = new MatchingEngine(orderBook);
         PrimitiveOrder[] orders = preGenerateOrders(loadSize, minPrice, maxPrice, step, distribution);
 
-        // Nếu là HybridOrderBookManual thì refresh cache lần đầu
-        if (orderBook instanceof HybridOrderBookManual manual) {
-            manual.refreshCache();
-        }
-
         // Warm-up
         for (int i = 0; i < WARMUP_ROUNDS; i++) {
             runSingleRound(engine, orders, false);
-            if (orderBook instanceof HybridOrderBookManual manual) {
-                manual.refreshCache();
-            }
         }
 
         // Measurement
@@ -83,10 +75,6 @@ public class StaticArrayOrderBookBenchmark {
             totalThroughput += result.throughputOpsPerSec;
             totalAvgLatency += result.avgLatencyMicros;
             p99Values[i] = result.p99;
-
-            if (orderBook instanceof HybridOrderBookManual manual) {
-                manual.refreshCache();
-            }
         }
 
         System.out.printf("[%s] Average over %d rounds:%n", name, MEASURE_ROUNDS);
@@ -214,3 +202,4 @@ public class StaticArrayOrderBookBenchmark {
         }
     }
 }
+

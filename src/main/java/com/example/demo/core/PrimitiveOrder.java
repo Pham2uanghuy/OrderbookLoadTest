@@ -2,7 +2,6 @@ package com.example.demo.core;
 
 public final class PrimitiveOrder{
     public long orderId;
-    public int userId;
     public int instrumentId;
     public long price;         // scaled price
     public long originalQty;   // scaled quantity
@@ -37,7 +36,6 @@ public final class PrimitiveOrder{
                           byte status,
                           long timestamp) {
         this.orderId = orderId;
-        this.userId = userId;
         this.instrumentId = instrumentId;
         this.price = price;
         this.originalQty = originalQty;
@@ -62,7 +60,6 @@ public final class PrimitiveOrder{
     // Constructor copy
     public PrimitiveOrder(PrimitiveOrder other) {
         this.orderId = other.orderId;
-        this.userId = other.userId;
         this.instrumentId = other.instrumentId;
         this.price = other.price;
         this.originalQty = other.originalQty;

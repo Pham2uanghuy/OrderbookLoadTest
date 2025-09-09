@@ -1,46 +1,47 @@
-package com.example.demo.impl.arraydeque;
+package com.example.demo.impl.linkedlist;
 
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import com.example.demo.core.OrderBook;
 import com.example.demo.core.PrimitiveOrder;
+import org.eclipse.collections.impl.map.mutable.primitive.LongObjectHashMap;
 
+import java.util.*;
 
-public class SkipListMapArrayDequeOrderBook implements OrderBook {
+public class LongObjectLinkedListOrderBook implements OrderBook {
 
-    // Map to store bid and ask levels (key = scaled price in long)
-    private final NavigableMap<Long, ArrayDeque<PrimitiveOrder>> bidLevels;
-    private final NavigableMap<Long, ArrayDeque<PrimitiveOrder>> askLevels;
+    // Map to store bid and ask levels
+    private final NavigableMap<Long, List<PrimitiveOrder>> bidLevels;
+    private final NavigableMap<Long, List<PrimitiveOrder>> askLevels;
 
     // Map to quickly find an order by its ID
-    private final ConcurrentHashMap<Long, PrimitiveOrder> ordersById;
+    private final LongObjectHashMap<PrimitiveOrder> ordersById;
 
-    public SkipListMapArrayDequeOrderBook() {
-        // Bids: sorted descending by price
-        this.bidLevels = new ConcurrentSkipListMap<>(Comparator.reverseOrder());
-        // Asks: sorted ascending by price
-        this.askLevels = new ConcurrentSkipListMap<>();
-        this.ordersById = new ConcurrentHashMap<>();
+    public LongObjectLinkedListOrderBook() {
+        this.bidLevels = new TreeMap<>(Comparator.reverseOrder()); // bids high -> low
+        this.askLevels = new TreeMap<>(); // asks low -> high
+        this.ordersById = new LongObjectHashMap<>();
     }
 
     @Override
     public void addOrder(PrimitiveOrder order) {
-        NavigableMap<Long, ArrayDeque<PrimitiveOrder>> targetBook =
+        NavigableMap<Long, List<PrimitiveOrder>> targetBook =
                 (order.side == PrimitiveOrder.SIDE_BUY) ? bidLevels : askLevels;
-        targetBook.computeIfAbsent(order.price, k -> new ArrayDeque<>()).addLast(order);
+
+        targetBook
+                .computeIfAbsent(order.price, k -> new LinkedList<>())
+                .add(order);
+
+        // Store the order by ID for quick lookups and updates
         ordersById.put(order.orderId, order);
     }
 
     @Override
     public void removeOrder(PrimitiveOrder order) {
-        NavigableMap<Long, ArrayDeque<PrimitiveOrder>> targetBook =
+        NavigableMap<Long, List<PrimitiveOrder>> targetBook =
                 (order.side == PrimitiveOrder.SIDE_BUY) ? bidLevels : askLevels;
 
-        ArrayDeque<PrimitiveOrder> ordersAtLevel = targetBook.get(order.price);
+        List<PrimitiveOrder> ordersAtLevel = targetBook.get(order.price);
         if (ordersAtLevel != null) {
-            ordersAtLevel.remove(order); // O(n), nhưng số order trên cùng price thường nhỏ
+            ordersAtLevel.remove(order);
             if (ordersAtLevel.isEmpty()) {
                 targetBook.remove(order.price);
             }

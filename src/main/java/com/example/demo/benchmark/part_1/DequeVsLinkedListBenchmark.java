@@ -1,54 +1,61 @@
-package com.example.demo.benchmark;
+package com.example.demo.benchmark.part_1;
 
 import com.example.demo.core.OrderBook;
 import com.example.demo.core.PrimitiveOrder;
 import com.example.demo.engine.MatchingEngine;
 import com.example.demo.impl.arraydeque.ArrayDequeOrderBook;
-import com.example.demo.impl.staticarray.StaticArrayOrderBook;
+import com.example.demo.impl.linkedlist.LinkedListOrderBook;
 
 import java.lang.management.ManagementFactory;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
-public class OrderBookHftBenchmark {
+public class DequeVsLinkedListBenchmark {
 
     private static final int WARMUP_ROUNDS = 3;
     private static final int MEASURE_ROUNDS = 5;
 
     public static void main(String[] args) {
-        int[] loadSizes = {50_000};
-
-        // Cấu hình giá thực tế4
-        double minPrice = 100.0;   // giá tối thiểu instrument
-        double maxPrice = 200.0;   // giá tối đa instrument
-        double priceStep = 0.01;   // bước giá cents
+        int[] loadSizes = {100_000};
+        int btcPriceStep = 1;
 
         for (int loadSize : loadSizes) {
             System.out.println("===== Benchmark with " + loadSize + " orders =====");
 
-            // StaticArrayOrderBook
-            StaticArrayOrderBook staticOrderBook = new StaticArrayOrderBook(minPrice, maxPrice, priceStep);
-            benchmarkOrderBook("StaticArrayOrderBook", staticOrderBook, loadSize, minPrice, maxPrice, priceStep);
+            // Scenario A: small range, clustered
+            System.out.println(">>> Scenario A: Small price range (~10k prices), orders clustered around mid-price");
+            benchmarkOrderBook("ArrayDequeOrderBook_SMALL_CLUSTERED", new ArrayDequeOrderBook(), loadSize, 20000, 30000, btcPriceStep, "clustered");
+            benchmarkOrderBook("LinkedListOrderBook_SMALL_CLUSTERED", new LinkedListOrderBook(), loadSize, 20000, 30000, btcPriceStep, "clustered");
 
-            // ArrayDequeOrderBook
-            ArrayDequeOrderBook arrayDequeOrderBook = new ArrayDequeOrderBook();
-            benchmarkOrderBook("ArrayDequeOrderBook", arrayDequeOrderBook, loadSize, minPrice, maxPrice, priceStep);
+            // Scenario B: small range, spread
+            System.out.println(">>> Scenario B: Small price range (~10k prices), orders spread out");
+            benchmarkOrderBook("ArrayDequeOrderBook_SMALL_SPREAD", new ArrayDequeOrderBook(), loadSize, 20000, 30000, btcPriceStep, "spread");
+            benchmarkOrderBook("LinkedListOrderBook_SMALL_SPREAD", new LinkedListOrderBook(), loadSize, 20000, 30000, btcPriceStep, "spread");
 
-            // LongObjectArrayDeque
+            // Scenario C: large range, clustered
+            System.out.println(">>> Scenario C: Large price range (~1M prices), orders clustered around mid-price");
+            benchmarkOrderBook("ArrayDequeOrderBook_LARGE_CLUSTERED", new ArrayDequeOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
+            benchmarkOrderBook("LinkedListOrderBook_LARGE_CLUSTERED", new LinkedListOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "clustered");
+
+            // Scenario D: large range, spread
+            System.out.println(">>> Scenario D: Large price range (~1M prices), orders spread out");
+            benchmarkOrderBook("ArrayDequeOrderBook_LARGE_SPREAD", new ArrayDequeOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
+            benchmarkOrderBook("LinkedListOrderBook_LARGE_SPREAD", new LinkedListOrderBook(), loadSize, 1000, 1_001_000, btcPriceStep, "spread");
         }
     }
 
     private static void benchmarkOrderBook(String name, OrderBook orderBook, int loadSize,
-                                           double minPrice, double maxPrice, double priceStep) {
+                                           int minPrice, int maxPrice, int step, String distribution) {
         MatchingEngine engine = new MatchingEngine(orderBook);
-        PrimitiveOrder[] orders = preGenerateOrders(loadSize, minPrice, maxPrice, priceStep);
+        PrimitiveOrder[] orders = preGenerateOrders(loadSize, minPrice, maxPrice, step, distribution);
 
-        // Warm-up rounds
+        // Warm-up
         for (int i = 0; i < WARMUP_ROUNDS; i++) {
             runSingleRound(engine, orders, false);
         }
 
-        // Measurement rounds
+        // Measurement
         double totalThroughput = 0;
         double totalAvgLatency = 0;
         double[] p99Values = new double[MEASURE_ROUNDS];
@@ -66,25 +73,10 @@ public class OrderBookHftBenchmark {
         Arrays.sort(p99Values);
         System.out.printf(" P99 latency: %.2f µs%n", p99Values[MEASURE_ROUNDS / 2]);
         System.out.println();
-    }
 
-    private static PrimitiveOrder[] preGenerateOrders(int loadSize, double minPrice, double maxPrice, double priceStep) {
-        PrimitiveOrder[] orders = new PrimitiveOrder[loadSize];
-        long orderId = 0;
-        ThreadLocalRandom rnd = ThreadLocalRandom.current();
-        for (int i = 0; i < loadSize; i++) {
-            double price = minPrice + rnd.nextDouble() * (maxPrice - minPrice);
-            long scaledPrice = Math.round(price / priceStep); // scale giá cho StaticArrayOrderBook
-            orders[i] = new PrimitiveOrder(
-                    orderId++,
-                    rnd.nextInt(1, 1000),     // quantity
-                    1,                         // instrumentId
-                    scaledPrice,               // price scaled
-                    rnd.nextInt(1, 5),         // userId
-                    (orderId % 2 == 0) ? PrimitiveOrder.SIDE_BUY : PrimitiveOrder.SIDE_SELL
-            );
-        }
-        return orders;
+        long usedMB = getUsedHeap() / (1024 * 1024);
+        System.out.printf(" Memory usage after test: %d MB%n", usedMB);
+        System.out.println("------------------------------------------------------");
     }
 
     private static BenchmarkResult runSingleRound(MatchingEngine engine, PrimitiveOrder[] orders, boolean measure) {
@@ -120,8 +112,8 @@ public class OrderBookHftBenchmark {
 
         Arrays.sort(latenciesNs);
         double p50 = latenciesNs[loadSize / 2] / 1000.0;
-        double p99 = latenciesNs[(int)(loadSize * 0.99)] / 1000.0;
-        double p999 = latenciesNs[(int)(loadSize * 0.999)] / 1000.0;
+        double p99 = latenciesNs[(int) (loadSize * 0.99)] / 1000.0;
+        double p999 = latenciesNs[(int) (loadSize * 0.999)] / 1000.0;
         double minLatency = latenciesNs[0] / 1000.0;
         double maxLatency = latenciesNs[loadSize - 1] / 1000.0;
 
@@ -135,6 +127,36 @@ public class OrderBookHftBenchmark {
         System.out.println();
 
         return new BenchmarkResult(throughputOpsPerSec, avgLatencyMicros, p50, p99, p999, minLatency, maxLatency);
+    }
+
+    private static PrimitiveOrder[] preGenerateOrders(int loadSize, int minPrice, int maxPrice, int step, String distribution) {
+        PrimitiveOrder[] orders = new PrimitiveOrder[loadSize];
+        long orderId = 0;
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
+        Random gaussianRnd = new Random();
+        int midPrice = minPrice + (maxPrice - minPrice) / 2;
+        int spreadRange = (maxPrice - minPrice) / 10;
+
+        for (int i = 0; i < loadSize; i++) {
+            long price;
+            if (distribution.equals("clustered")) {
+                double gaussianValue = gaussianRnd.nextGaussian() * (spreadRange / 3.0);
+                price = (long) (midPrice + gaussianValue);
+                price = Math.max(minPrice, Math.min(maxPrice, price));
+            } else {
+                price = minPrice + rnd.nextLong((maxPrice - minPrice) / step) * step;
+            }
+
+            orders[i] = new PrimitiveOrder(
+                    orderId++,
+                    rnd.nextInt(1, 1000),
+                    1,
+                    price,
+                    rnd.nextInt(1, 5),
+                    (orderId % 2 == 0) ? PrimitiveOrder.SIDE_BUY : PrimitiveOrder.SIDE_SELL
+            );
+        }
+        return orders;
     }
 
     private static long getTotalGcCount() {
@@ -158,7 +180,8 @@ public class OrderBookHftBenchmark {
         double avgLatencyMicros;
         double p50, p99, p999, min, max;
 
-        BenchmarkResult(double throughputOpsPerSec, double avgLatencyMicros, double p50, double p99, double p999, double min, double max) {
+        BenchmarkResult(double throughputOpsPerSec, double avgLatencyMicros, double p50, double p99,
+                        double p999, double min, double max) {
             this.throughputOpsPerSec = throughputOpsPerSec;
             this.avgLatencyMicros = avgLatencyMicros;
             this.p50 = p50;
@@ -169,4 +192,3 @@ public class OrderBookHftBenchmark {
         }
     }
 }
-
