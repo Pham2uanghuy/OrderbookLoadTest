@@ -1,4 +1,4 @@
-package com.example.demo.impl.staticarray;
+package com.example.demo.impl.staticarray.orderlevel;
 
 import com.example.demo.core.PrimitiveOrder;
 
