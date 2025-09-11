@@ -15,14 +15,7 @@ public class MatchingEngine {
         this.orderBook = orderBook;
     }
 
-    public void handleNewOrder(PrimitiveOrder newOrder) {
-        orderBook.addOrder(newOrder);
-        processOrder(newOrder);
-    }
-
-    private void processOrder(PrimitiveOrder aggressorOrder) {
-
-
+    public void handleNewOrder(PrimitiveOrder aggressorOrder) {
         if (aggressorOrder.side == PrimitiveOrder.SIDE_BUY) {
             processBuyOrder(aggressorOrder);
         } else {

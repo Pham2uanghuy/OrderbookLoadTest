@@ -1,6 +1,6 @@
 package com.example.demo.core;
 
-public final class PrimitiveOrder{
+public final class PrimitiveOrder {
     public long orderId;
     public int instrumentId;
     public long price;         // scaled price
@@ -10,6 +10,7 @@ public final class PrimitiveOrder{
     public byte side;
     public byte status;
     public long timestamp;
+    public int userId;
 
     // Side Constants
     public static final byte SIDE_BUY = 0;
@@ -21,10 +22,12 @@ public final class PrimitiveOrder{
     public static final byte STATUS_FILLED = 2;
     public static final byte STATUS_CANCELED = 3;
 
-
+    // No-arg constructor for serialization frameworks
     public PrimitiveOrder() {}
 
-
+    /**
+     * The primary constructor that initializes all fields.
+     */
     public PrimitiveOrder(long orderId,
                           int userId,
                           int instrumentId,
@@ -36,6 +39,7 @@ public final class PrimitiveOrder{
                           byte status,
                           long timestamp) {
         this.orderId = orderId;
+        this.userId = userId;
         this.instrumentId = instrumentId;
         this.price = price;
         this.originalQty = originalQty;
@@ -46,6 +50,10 @@ public final class PrimitiveOrder{
         this.timestamp = timestamp;
     }
 
+    /**
+     * A convenient constructor for creating a new, open order.
+     * This constructor delegates to the primary constructor with default values for remainingQty, filledQty, status, and timestamp.
+     */
     public PrimitiveOrder(long orderId,
                           int userId,
                           int instrumentId,
@@ -57,19 +65,14 @@ public final class PrimitiveOrder{
                 side, STATUS_OPEN, System.nanoTime());
     }
 
-    // Constructor copy
+    /**
+     * Copy constructor.
+     */
     public PrimitiveOrder(PrimitiveOrder other) {
-        this.orderId = other.orderId;
-        this.instrumentId = other.instrumentId;
-        this.price = other.price;
-        this.originalQty = other.originalQty;
-        this.remainingQty = other.remainingQty;
-        this.filledQty = other.filledQty;
-        this.side = other.side;
-        this.status = other.status;
-        this.timestamp = other.timestamp;
+        this(other.orderId, other.userId, other.instrumentId,
+                other.price, other.originalQty, other.remainingQty,
+                other.filledQty, other.side, other.status, other.timestamp);
     }
-
 
     public void fill(long fillAmount) {
         if (fillAmount <= 0) return;
