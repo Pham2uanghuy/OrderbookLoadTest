@@ -82,7 +82,7 @@ The benchmark covers **4 scenarios**, each representing a different distribution
 
 ---
 
-## 2. Methodology
+## Methodology
 
 - **Pre-generated orders**
     - Clustered: Gaussian distribution around mid-price

@@ -37,7 +37,7 @@ public class ArrayDequeOrderBook implements OrderBook {
 
         ArrayDeque<PrimitiveOrder> ordersAtLevel = targetBook.get(order.price);
         if (ordersAtLevel != null) {
-            ordersAtLevel.remove(order); // O(n), nhưng số order trên cùng price thường nhỏ
+            ordersAtLevel.remove(order); // O(n)
             if (ordersAtLevel.isEmpty()) {
                 targetBook.remove(order.price);
             }
